@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>@yield('page-title')</title>
+    @vite('resources/css/app.css', 'resources/js/app.js')
+    @livewireStyles
+</head>
+
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+    {{-- header --}}
+    @include('user.H&F.header')
+
+    {{-- Main Content --}}
+    @yield('content')
+
+    {{-- footer --}}
+    @include('user.H&F.footer')
+
+    @livewireScripts
+</body>
+
+</html>

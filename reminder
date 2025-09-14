@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>@yield('page-title')</title>
+    @vite('resources/css/app.css' , 'resources/js/app.js')
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+ {{-- header --}}
+ @include('layouts.header')
+
+    {{-- Main Content --}}
+@yield('content')
+
+ {{-- footer --}}
+ @include('layouts.footer')
+
+
+</body>
+</html>
+
+
+
+
+
+component
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $title ?? 'No Title' }}</title>
+    @vite('resources/css/app.css', 'resources/js/app.js')
+</head>
+
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+    {{-- header --}}
+    @include('layouts.header')
+
+    {{-- Main Content --}}
+    @yield('content')
+
+    {{-- Post List --}}
+    {{ $slot }}
+
+    {{-- footer --}}
+    @include('layouts.footer')
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//   {{{{{Login & Register}}}}}
+Route::get('/user', function () {
+    $posts = Post::all();
+    // dd($posts);
+    return view('user.usershow', compact('posts'));
+})->name('user');
+
+// نمایش فرم ثبت‌نام
+Route::get('user/register', function () {
+    return view('user.register');
+})->name('user.register');
+
+// ذخیره کاربر جدید
+Route::post('user/register', function (Request $request) {
+    $ValidatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|unique:users,email',
+        'password' => 'required|string|min:6',
+    ]);
+
+    // ساخت کاربر جدید
+    User::create([
+        'name' => $ValidatedData['name'],
+        'email' => $ValidatedData['email'],
+        'password' => Hash::make($ValidatedData['password'])
+    ]);
+
+    return redirect()->route('user.login')->with('success', 'ثبت‌نام با موفقیت انجام شد');
+})->name('user.create');
+
+// نمایش فرم لاگین
+Route::get('user/login', function () {
+    return view('user.login');
+})->name('user.login');
+
+// ورود کاربر
+Route::post('user/login', function (Request $request) {
+    $ValidatedData = $request->validate([
+        'login' => 'required|string',
+        'password' => 'required|string',
+    ], [
+        'login.required' => 'فرم نام یا ایمیل خالی است',
+        'password.required' => 'فرم پسورد خالی است',
+
+    ]);
+
+    $login = $ValidatedData['login'];
+
+    // پیدا کردن کاربر بر اساس ایمیل یا نام
+    if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+        $user = User::where('email', $login)->first();
+    } else {
+        $user = User::where('name', $login)->first();
+    }
+
+    if (!$user) {
+        return back()->withErrors([
+            'login' => 'نام یا ایمیل اشتباه است'
+        ])->withInput();
+    } elseif (!Hash::check($ValidatedData['password'], $user->password)) {
+        return back()->withErrors([
+            'password' => 'پسورد اشتباه است'
+        ])->withInput();
+    }
+
+    Auth::login($user);
+
+    return redirect()->route('users');
+})->name('user.login.post');
+
+// نمایش لیست کاربران
+Route::get('/user', function () {
+    $users = User::all();
+    return view('user.usershow', compact('users'));
+})->name('users');
+
+Route::delete('/user/{user}/delete', function (User $user) {
+
+    // authorization
+    $user->delete();
+
+    return redirect()->route('users');
+});
+// EDIT PAGE
+Route::get('user/{user}/edit', function (User $user) {
+    return view('user.edit', compact('user'));
+})->name('edit.page');
+
+// EDIT USER
+Route::post('user/{user}', function (Request $request, User $user) {
+    $ValidatedData = $request->validate([
+        'name' => 'sometimes|nullable|string',
+        'email' => 'sometimes|nullable|string|unique:users,email',
+        'current_password' => 'sometimes|nullable|string',
+        'new_password' => 'sometimes|nullable|string|min:6|confirmed',
+    ]);
+    //  چک کردن پسورد فعلی
+    if (!Hash::check($ValidatedData['current_password'], $user->password) && !empty($ValidatedData['current_password'])) {
+        return back()->withErrors([
+            'current_password' => '⛔پسورد فعلی اشتباه است'
+        ]);
+    }
+    // حذف فیلد های غیرضروری و اضافه کردن پسورد جدید
+    if (!empty($ValidatedData['new_password'])) {
+        $ValidatedData['password'] = Hash::make($ValidatedData['new_password']);
+    }
+    unset($ValidatedData['current_password']);
+    unset($ValidatedData['new_password']);
+
+    //    پاک کردن فیلد های خالی
+    $ValidatedData = array_filter($ValidatedData, fn($value) => $value !== null && $value !== '');
+
+    // اضافه کردن پسورد جدید
+
+
+    $user->update($ValidatedData);
+
+    return redirect()->route('users')->with('success', 'عملیات ویرایش اطلاعات با موفقیت انجام شد');
+})->name('user.single.edit');
