@@ -91,7 +91,7 @@ Route::post('/user/logout', [UserController::class, 'logout'])->name('user.logou
 });
 
 // نمایش فرم برای پر کردن فاکتور
-Route::get('/invoice/form', [InvoiceController::class, 'index'])->name('invoice.form');
+Route::get('/invoice/form', [InvoiceController::class, 'index'])->name('invoice.form');  
 
 // ارسال درخواست برای ساخت فرم
 Route::post('/invoice/store', [InvoiceController::class, 'store'])->name('invoice.store');
