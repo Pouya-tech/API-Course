@@ -25,17 +25,19 @@
                         <th class="border border-gray-300 px-4 py-2 text-left">شرح کالا</th>
                         <th class="border border-gray-300 px-4 py-2 text-right">تعداد</th>
                         <th class="border border-gray-300 px-4 py-2 text-right">قیمت واحد</th>
+                        <th class="border border-gray-300 px-4 py-2 text-right">مالیات</th>
                         <th class="border border-gray-300 px-4 py-2 text-right">تخفیف</th>
                         <th class="border border-gray-300 px-4 py-2 text-right">جمع</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($invoice['InvoiceItems'] ?? [] as $item)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50">    
                             <td class="border border-gray-300 px-4 py-2">{{ $item['Description'] }}</td>
                             <td class="border border-gray-300 px-4 py-2 text-right">{{ $item['Quantity'] }}</td>
                             <td class="border border-gray-300 px-4 py-2 text-right">{{ number_format($item['UnitPrice']) }}
                             </td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">{{ $item['Tax'] }}</td>
                             <td class="border border-gray-300 px-4 py-2 text-right">{{ $item['Discount'] }}</td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ number_format($item['TotalAmount']) }}</td>

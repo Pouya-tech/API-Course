@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
-
+use Morilog\Jalali\Jalalian;
 class InvoiceController extends Controller
 {
     /**
@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
+    public function store(Request $request)
 {
     $data = $request->all();
 
@@ -58,6 +58,7 @@ public function store(Request $request)
         'contactCode' => $data['contactCode'] ?? '',
         'contactTitle' => $data['customerName'] ?? '',
         'invoiceType' => (int) ($data['invoiceType'] ?? 0),
+        'freight' => (float) ($data['freight'] ?? 0),
         'status' => 1, //
         'invoiceItems' => $items,
         'currency' => 'IRR',
@@ -70,7 +71,7 @@ public function store(Request $request)
         'invoice' => $invoiceData
     ])->json();
 
-    if ($response['Success']) {
+    if (!empty($response['Success'])) {
         // گرفتن داده فاکتور ساخته شده
     $invoice = $response['Result'] ?? [];
     // ریدایرکت به صفحه نمایش فاکتور
@@ -98,15 +99,14 @@ public function show($number , $type)
              'type' => $type,
     ])->json();
 
-    if ($response['Success']) {
-        $invoice = $response['Result'];
+    if (!empty($response['Success'])) {
+    $invoice = $response['Result'];
 
         return view('invoice.show', compact('invoice'));
     } else {
         abort(404, 'فاکتور پیدا نشد');
     }
 }
-
 
     /**
      * Show the form for editing the specified resource.
